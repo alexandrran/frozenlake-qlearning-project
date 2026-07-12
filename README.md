@@ -1,8 +1,6 @@
 # FrozenLake Q-Learning
 
-[![Tests](https://github.com/alexandrran/frozenlake-qlearning-project/actions/workflows/tests.yml/badge.svg)](https://github.com/alexandrran/frozenlake-qlearning-project/actions/workflows/tests.yml)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB)
-![License](https://img.shields.io/badge/License-MIT-2EA44F)
 
 A reproducible tabular Q-learning agent for Gymnasium's `FrozenLake-v1` environment. The project demonstrates epsilon-greedy exploration, temporal-difference learning, policy evaluation, and visual analysis on the standard 4x4 and 8x8 slippery maps.
 
@@ -57,7 +55,6 @@ The Q-table has shape `16 x 4` for the 4x4 map and `64 x 4` for the 8x8 map.
 - Training progress, learned-policy, and Q-table visualisations.
 - Saved models and JSON experiment metadata.
 - Command-line interface for training, demos, and visualisation.
-- Unit tests executed automatically with GitHub Actions.
 
 ## Installation
 
@@ -114,21 +111,8 @@ python frozen_lake_q.py visualize --map-name 8x8 --slippery
 +-- assets/maps/          FrozenLake screenshots
 +-- results/4x4/          4x4 model, metrics, and figures
 +-- results/8x8/          8x8 model, metrics, and figures
-+-- tests/                Unit tests for core Q-learning logic
 +-- frozen_lake_q.py      Training, evaluation, CLI, and visualisation
-+-- requirements.txt      Runtime dependencies
-`-- requirements-dev.txt  Test dependencies
++-- requirements.txt      Project dependencies
 ```
 
 Each `metrics.json` records the map, slippery mode, episode count, hyperparameters, seeds, and before/after success rates. Training the same map again replaces that map's saved artifacts.
-
-## Tests
-
-```bash
-pip install -r requirements-dev.txt
-pytest -q
-```
-
-## License
-
-This project is available under the [MIT License](LICENSE).
