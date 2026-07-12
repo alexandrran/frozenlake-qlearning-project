@@ -16,7 +16,7 @@ Saved policies were evaluated greedily over 1,000 seeded test episodes. The slip
 | Environment | Training episodes | Before training | After training |
 |---|---:|---:|---:|
 | 4x4 slippery | 20,000 | 1.4% | **73.9%** |
-| 8x8 slippery | 40,000 | 0.2% | **75.8%** |
+| 8x8 slippery | 40,000 | 0.2% | **58.2%** |
 
 ### 8x8 training progress
 

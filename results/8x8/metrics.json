@@ -12,6 +12,6 @@
   "evaluation_episodes": 1000,
   "before_training_wins": 2,
   "before_training_success_rate": 0.2,
-  "after_training_wins": 758,
-  "after_training_success_rate": 75.8
+  "after_training_wins": 582,
+  "after_training_success_rate": 58.2
 }
