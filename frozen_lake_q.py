@@ -1,4 +1,6 @@
+import argparse
 import gymnasium as gym
+import json
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
@@ -48,6 +50,13 @@ def select_best_action(q, state, rng):
     state_actions = q[state, :]
     best_actions = np.flatnonzero(state_actions == np.max(state_actions))
     return int(rng.choice(best_actions))
+
+
+def update_q_value(q, state, action, reward, new_state, done, alpha, gamma):
+    future_q = 0 if done else np.max(q[new_state, :])
+    q[state, action] += alpha * (
+        reward + gamma * future_q - q[state, action]
+    )
 
 
 def evaluate_agent(q, episodes=1000, seed=EVALUATION_SEED):
@@ -179,6 +188,13 @@ def run(episodes, is_training=True, render=False):
         with open(artifact_path('q_table.pkl'), 'rb') as f:
             q = pickle.load(f)
 
+        expected_shape = (env.observation_space.n, env.action_space.n)
+        if q.shape != expected_shape:
+            raise ValueError(
+                f'Saved Q-table has shape {q.shape}, expected {expected_shape} '
+                f'for the {MAP_NAME} map.'
+            )
+
     learning_rate_a = 0.1      # alpha: how strongly new experience updates the Q-table
     discount_factor_g = 0.95   # gamma: how much the agent values future rewards
     epsilon = 1.0              # 1 = 100% random actions at the start of training
@@ -214,9 +230,15 @@ def run(episodes, is_training=True, render=False):
             new_state, reward, terminated, truncated, _ = env.step(action)
 
             if is_training:
-                future_q = 0 if terminated or truncated else np.max(q[new_state, :])
-                q[state, action] = q[state, action] + learning_rate_a * (
-                    reward + discount_factor_g * future_q - q[state, action]
+                update_q_value(
+                    q,
+                    state,
+                    action,
+                    reward,
+                    new_state,
+                    terminated or truncated,
+                    learning_rate_a,
+                    discount_factor_g,
                 )
 
             state = new_state
@@ -262,18 +284,63 @@ def run(episodes, is_training=True, render=False):
         save_q_table_visualizations(q)
 
         after_wins, after_rate = evaluate_agent(q)
+        metrics = {
+            'map_name': MAP_NAME,
+            'is_slippery': IS_SLIPPERY,
+            'episodes': episodes,
+            'alpha': learning_rate_a,
+            'gamma': discount_factor_g,
+            'initial_epsilon': 1.0,
+            'minimum_epsilon': min_epsilon,
+            'epsilon_decay_episodes': exploration_episodes,
+            'training_seed': TRAINING_SEED,
+            'evaluation_seed': EVALUATION_SEED,
+            'evaluation_episodes': 1000,
+            'before_training_wins': before_wins,
+            'before_training_success_rate': before_rate,
+            'after_training_wins': after_wins,
+            'after_training_success_rate': after_rate,
+        }
+        with open(artifact_path('metrics.json'), 'w', encoding='utf-8') as f:
+            json.dump(metrics, f, indent=2)
+
         print(f'After training: {after_wins}/1000 wins ({after_rate:.1f}% success rate)')
         print(
             'Saved: '
             f'{artifact_path("q_table.pkl")}, '
             f'{artifact_path("training_progress.png")}, '
             f'{artifact_path("policy.png")}, '
-            f'{artifact_path("q_table.png")}'
+            f'{artifact_path("q_table.png")}, '
+            f'{artifact_path("metrics.json")}'
         )
 
 
-if __name__ == '__main__':
-    run(40000)  # training
+def main():
+    global MAP_NAME, IS_SLIPPERY
 
-    # run(3, is_training=False, render=True)  # demo
-    # visualize_saved_q_table()  # create images from the saved model without training
+    parser = argparse.ArgumentParser(
+        description='Train, evaluate, or demonstrate a FrozenLake Q-learning agent.'
+    )
+    parser.add_argument('mode', choices=('train', 'demo', 'visualize'))
+    parser.add_argument('--map-name', choices=tuple(MAP_LAYOUTS), default='8x8')
+    ice_group = parser.add_mutually_exclusive_group()
+    ice_group.add_argument('--slippery', dest='slippery', action='store_true')
+    ice_group.add_argument('--no-slippery', dest='slippery', action='store_false')
+    parser.set_defaults(slippery=True)
+    parser.add_argument('--episodes', type=int, default=40000)
+    parser.add_argument('--demo-episodes', type=int, default=3)
+    args = parser.parse_args()
+
+    MAP_NAME = args.map_name
+    IS_SLIPPERY = args.slippery
+
+    if args.mode == 'train':
+        run(args.episodes)
+    elif args.mode == 'demo':
+        run(args.demo_episodes, is_training=False, render=True)
+    else:
+        visualize_saved_q_table()
+
+
+if __name__ == '__main__':
+    main()

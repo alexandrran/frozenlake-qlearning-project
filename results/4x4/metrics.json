@@ -1,0 +1,17 @@
+{
+  "map_name": "4x4",
+  "is_slippery": true,
+  "episodes": 20000,
+  "alpha": 0.1,
+  "gamma": 0.95,
+  "initial_epsilon": 1.0,
+  "minimum_epsilon": 0.0,
+  "epsilon_decay_episodes": 5000,
+  "training_seed": 42,
+  "evaluation_seed": 12345,
+  "evaluation_episodes": 1000,
+  "before_training_wins": 14,
+  "before_training_success_rate": 1.4,
+  "after_training_wins": 739,
+  "after_training_success_rate": 73.9
+}
